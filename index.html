@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanguru Runner</title>
+<title>Kanguru Koşucu</title>
+
 <style>
 body{
 margin:0;
@@ -24,10 +26,11 @@ margin-top:10px;
 
 #gameOver{
 display:none;
-font-size:30px;
+font-size:28px;
 margin-top:20px;
 }
 </style>
+
 </head>
 
 <body>
@@ -48,7 +51,7 @@ const ctx = canvas.getContext("2d")
 
 let kangaroo = {
 x:50,
-y:150,
+y:140,
 width:20,
 height:20,
 vy:0,
@@ -58,6 +61,7 @@ jump:false
 let obstacles=[]
 let score=0
 let speed=4
+let groundOffset=0
 let gameRunning=true
 
 function drawKangaroo(){
@@ -65,11 +69,31 @@ ctx.fillStyle="black"
 ctx.fillRect(kangaroo.x,kangaroo.y,kangaroo.width,kangaroo.height)
 }
 
-function jump(){
-if(!kangaroo.jump){
-kangaroo.vy=-10
-kangaroo.jump=true
+function drawGround(){
+
+groundOffset -= speed
+
+if(groundOffset <= -40){
+groundOffset = 0
 }
+
+for(let i=0;i<20;i++){
+
+ctx.fillRect(i*40 + groundOffset,160,40,5)
+
+}
+
+}
+
+function jump(){
+
+if(!kangaroo.jump){
+
+kangaroo.vy = -10
+kangaroo.jump = true
+
+}
+
 }
 
 document.addEventListener("touchstart",jump)
@@ -77,13 +101,20 @@ document.addEventListener("keydown",jump)
 
 function createObstacle(){
 
-let size=20
+let type = Math.floor(Math.random()*3)
+
+let height = 20
+
+if(type==1) height = 30
+if(type==2) height = 25
 
 obstacles.push({
+
 x:400,
-y:150,
-width:size,
-height:size
+y:160-height,
+width:20,
+height:height
+
 })
 
 }
@@ -96,54 +127,69 @@ if(!gameRunning) return
 
 ctx.clearRect(0,0,400,200)
 
-kangaroo.y+=kangaroo.vy
-kangaroo.vy+=0.5
+drawGround()
 
-if(kangaroo.y>=150){
-kangaroo.y=150
-kangaroo.jump=false
+kangaroo.y += kangaroo.vy
+kangaroo.vy += 0.5
+
+if(kangaroo.y >= 140){
+
+kangaroo.y = 140
+kangaroo.jump = false
+
 }
 
 drawKangaroo()
 
 for(let i=0;i<obstacles.length;i++){
 
-let o=obstacles[i]
+let o = obstacles[i]
 
-o.x-=speed
+o.x -= speed
 
 ctx.fillRect(o.x,o.y,o.width,o.height)
 
 if(
+
 kangaroo.x < o.x + o.width &&
 kangaroo.x + kangaroo.width > o.x &&
 kangaroo.y < o.y + o.height &&
 kangaroo.y + kangaroo.height > o.y
+
 ){
+
 gameOver()
+
 }
 
-if(o.x<0){
+if(o.x < -20){
+
 obstacles.splice(i,1)
 score++
-document.getElementById("score").innerText="Skor: "+score
-}
+
+document.getElementById("score").innerText = "Skor: " + score
 
 }
 
-speed+=0.001
+}
+
+speed += 0.001
 
 requestAnimationFrame(update)
 
 }
 
 function gameOver(){
+
 gameRunning=false
 document.getElementById("gameOver").style.display="block"
+
 }
 
 function restart(){
+
 location.reload()
+
 }
 
 update()
