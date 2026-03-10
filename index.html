@@ -3,44 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kanguru Koşucu V3</title>
+<title>Kanguru Koşucu V4</title>
 
 <style>
+
 body{
 margin:0;
-text-align:center;
+overflow:hidden;
 font-family:Arial;
+text-align:center;
 background:#87CEEB;
+}
+
+#menu{
+position:absolute;
+top:40%;
+left:50%;
+transform:translate(-50%,-50%);
+}
+
+button{
+font-size:22px;
+padding:10px 20px;
 }
 
 canvas{
-background:#87CEEB;
+display:block;
+margin:auto;
 }
 
 #score{
-font-size:22px;
-margin-top:10px;
+position:absolute;
+top:10px;
+left:10px;
+font-size:20px;
 }
 
-#gameOver{
-display:none;
-font-size:28px;
-margin-top:10px;
-}
 </style>
+
 </head>
 
 <body>
 
+<div id="menu">
+<h1>Kanguru Koşucu</h1>
+<button onclick="startGame()">Başla</button>
+</div>
+
 <div id="score">Skor: 0</div>
 
 <canvas id="game"></canvas>
-
-<div id="gameOver">
-Game Over<br>
-High Score: <span id="highScore"></span><br>
-<button onclick="restart()">Tekrar Başla</button>
-</div>
 
 <script>
 
@@ -50,7 +62,20 @@ const ctx=canvas.getContext("2d")
 canvas.width=window.innerWidth
 canvas.height=200
 
-let kangaroo={
+let kangaroo
+let obstacles=[]
+let score=0
+let speed=4
+let groundOffset=0
+let gameRunning=false
+
+let highScore=localStorage.getItem("highScore")||0
+
+function startGame(){
+
+document.getElementById("menu").style.display="none"
+
+kangaroo={
 x:60,
 y:140,
 width:30,
@@ -59,20 +84,22 @@ vy:0,
 jump:false
 }
 
-let obstacles=[]
-let score=0
-let speed=4
-let groundOffset=0
-let gameRunning=true
+obstacles=[]
+score=0
+speed=4
+gameRunning=true
 
-let highScore=localStorage.getItem("highScore")||0
-document.getElementById("highScore").innerText=highScore
+update()
+
+}
 
 function drawSun(){
+
 ctx.fillStyle="yellow"
 ctx.beginPath()
 ctx.arc(canvas.width-60,40,20,0,Math.PI*2)
 ctx.fill()
+
 }
 
 function drawGround(){
@@ -92,6 +119,7 @@ ctx.fillRect(i*40+groundOffset,170,40,30)
 function drawKangaroo(){
 
 ctx.fillStyle="#8B4513"
+
 ctx.fillRect(kangaroo.x,kangaroo.y,kangaroo.width,kangaroo.height)
 
 }
@@ -99,34 +127,35 @@ ctx.fillRect(kangaroo.x,kangaroo.y,kangaroo.width,kangaroo.height)
 function jump(){
 
 if(!kangaroo.jump){
+
 kangaroo.vy=-12
 kangaroo.jump=true
+
 }
 
 }
 
 document.addEventListener("touchstart",jump)
-document.addEventListener("keydown",jump)
+document.addEventListener("keydown",e=>{
+if(e.code==="Space") jump()
+})
 
 function createObstacle(){
 
-let type=Math.floor(Math.random()*3)
-
-let height=25
-
-if(type==1) height=35
-if(type==2) height=30
+let height=25+Math.random()*15
 
 obstacles.push({
+
 x:canvas.width,
 y:170-height,
 width:20,
 height:height
+
 })
 
 }
 
-setInterval(createObstacle,1400)
+setInterval(createObstacle,1500)
 
 function update(){
 
@@ -163,13 +192,19 @@ kangaroo.x + kangaroo.width > o.x &&
 kangaroo.y < o.y + o.height &&
 kangaroo.y + kangaroo.height > o.y
 ){
+
 gameOver()
+
 }
 
 if(o.x<-20){
+
 obstacles.splice(i,1)
+
 score++
+
 document.getElementById("score").innerText="Skor: "+score
+
 }
 
 }
@@ -185,19 +220,16 @@ function gameOver(){
 gameRunning=false
 
 if(score>highScore){
+
 localStorage.setItem("highScore",score)
-document.getElementById("highScore").innerText=score
-}
-
-document.getElementById("gameOver").style.display="block"
 
 }
 
-function restart(){
+alert("Game Over | Skor: "+score)
+
 location.reload()
-}
 
-update()
+}
 
 </script>
 
